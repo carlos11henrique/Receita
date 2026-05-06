@@ -33,7 +33,7 @@ import { FavoritoModule } from './Favorito.module';
       useFactory: (configService: ConfigService) => ({
         type: 'postgres' as const,
         host: configService.get<string>('DB_HOST', 'localhost'),
-        port: configService.get<number>('DB_PORT', 5000),
+        port: configService.get<number>('DB_PORT', 5432),
         username: configService.get<string>('DB_USERNAME', 'postgres'),
         password: configService.get<string>('DB_PASSWORD', 'postgres'),
         database: configService.get<string>('DB_DATABASE', 'projeto_receita'),

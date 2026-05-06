@@ -18,8 +18,14 @@ export class CreateReceitaDto {
   @IsNumber()
   preco: number;
 
+  @IsOptional()
   @IsInt()
-  criadorId: number;
+  criadorId?: number;
+
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }) => sanitize(value))
+  imageUrl?: string;
 
   @IsOptional()
   @IsArray()

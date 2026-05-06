@@ -3,11 +3,15 @@ import { ref, onMounted } from 'vue';
 import Login from './components/login.vue';
 import Cadastro from './components/cadastro.vue';
 import Ecommerce from './components/Ecommerce.vue';
+import Profile from './components/Profile.vue';
 
+const currentPage = ref<'home' | 'profile'>('home');
 const currentView = ref<'login' | 'cadastro'>('login');
 const showAuthModal = ref(false);
 const isAuthenticated = ref(false);
+const userId = ref<number | null>(null);
 const userName = ref('');
+const userRole = ref<'client' | 'affiliate' | 'vendor' | 'admin'>('client');
 
 onMounted(() => {
   const token = localStorage.getItem('token');
@@ -15,9 +19,14 @@ onMounted(() => {
   if (token && storedUser) {
     isAuthenticated.value = true;
     try {
-      userName.value = JSON.parse(storedUser).name;
+      const data = JSON.parse(storedUser);
+      userId.value = data.id ?? null;
+      userName.value = data.name || '';
+      userRole.value = data.role || 'client';
     } catch {
+      userId.value = null;
       userName.value = '';
+      userRole.value = 'client';
     }
   }
 });
@@ -28,9 +37,14 @@ const handleLoginSuccess = (token: string) => {
   const storedUser = localStorage.getItem('user');
   if (storedUser) {
     try {
-      userName.value = JSON.parse(storedUser).name;
+      const data = JSON.parse(storedUser);
+      userId.value = data.id ?? null;
+      userName.value = data.name || '';
+      userRole.value = data.role || 'client';
     } catch {
+      userId.value = null;
       userName.value = '';
+      userRole.value = 'client';
     }
   }
 };
@@ -52,7 +66,10 @@ const handleLogout = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
   isAuthenticated.value = false;
+  userId.value = null;
   userName.value = '';
+  userRole.value = 'client';
+  currentPage.value = 'home';
 };
 </script>
 
@@ -86,7 +103,21 @@ const handleLogout = () => {
     </header>
 
     <main>
-      <Ecommerce :is-authenticated="isAuthenticated" @request-auth="openAuthModal('login')" />
+      <Ecommerce
+        v-if="currentPage === 'home'"
+        :is-authenticated="isAuthenticated"
+        :user-role="userRole"
+        @request-auth="openAuthModal('login')"
+        @openProfile="currentPage = 'profile'"
+      />
+      <Profile
+        v-else
+        :user-id="userId"
+        :user-name="userName"
+        :user-role="userRole"
+        :is-authenticated="isAuthenticated"
+        @back="currentPage = 'home'"
+      />
     </main>
 
     <Transition name="fade">

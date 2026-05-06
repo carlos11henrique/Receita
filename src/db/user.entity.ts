@@ -4,8 +4,10 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   OneToMany,
+  OneToOne,
 } from 'typeorm';
 import { UserRole } from './user-role.enum';
+import { Criador } from './Criador.entity';
 
 @Entity('users')
 export class User {
@@ -35,6 +37,9 @@ export class User {
 
   @OneToMany('Favorito', 'usuario')
   favoritos!: any[];
+
+  @OneToOne(() => Criador, (criador) => criador.user)
+  criador?: Criador;
 
   @CreateDateColumn()
   createdAt!: Date;

@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Receita } from '../db/Receita.entity';
 import { Criador } from '../db/Criador.entity';
 import { Genero } from '../db/genero.entity';
+import { User } from '../db/user.entity';
 import { CreateReceitaDto } from '../dto/CreateReceitaDto';
 import { UpdateReceitaDto } from '../dto/UpdateReceitaDto';
 
@@ -16,14 +17,21 @@ export class ReceitaService {
     private criadorRepository: Repository<Criador>,
     @InjectRepository(Genero)
     private generoRepository: Repository<Genero>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
   ) {}
 
-  async create(createReceitaDto: CreateReceitaDto): Promise<Receita> {
+  async create(createReceitaDto: CreateReceitaDto, userId: number): Promise<Receita> {
     const { criadorId, categoriasIds, ...receitaData } = createReceitaDto;
 
-    const criador = await this.criadorRepository.findOne({ where: { id: criadorId } });
-    if (!criador) {
-      throw new NotFoundException('Criador not found');
+    let criador: Criador | null = null;
+    if (criadorId !== undefined && criadorId !== null) {
+      criador = await this.criadorRepository.findOne({ where: { id: criadorId } });
+      if (!criador) {
+        throw new NotFoundException('Criador not found');
+      }
+    } else {
+      criador = await this.findOrCreateCriadorForUser(userId);
     }
 
     let categorias: Genero[] = [];
@@ -38,6 +46,29 @@ export class ReceitaService {
     });
 
     return this.receitaRepository.save(receita);
+  }
+
+  private async findOrCreateCriadorForUser(userId: number): Promise<Criador> {
+    let criador = await this.criadorRepository.findOne({
+      where: { user: { id: userId } },
+      relations: ['user'],
+    });
+
+    if (!criador) {
+      const user = await this.userRepository.findOne({ where: { id: userId } });
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      criador = this.criadorRepository.create({
+        nome: user.name,
+        descricao: `Colaborador ${user.name}`,
+        user,
+      });
+      await this.criadorRepository.save(criador);
+    }
+
+    return criador;
   }
 
   async findAll(): Promise<Receita[]> {

@@ -4,7 +4,10 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   OneToMany,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
+import { User } from './user.entity';
 
 @Entity('criador')
 export class Criador {
@@ -19,6 +22,10 @@ export class Criador {
 
   @CreateDateColumn()
   createdAt!: Date;
+
+  @OneToOne(() => User, { nullable: true })
+  @JoinColumn()
+  user?: User;
 
   @OneToMany('Receita', 'criador')
   receitas!: any[];

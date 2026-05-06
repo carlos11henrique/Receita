@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from '../db/user.entity';
+import { UserRole } from '../db/user-role.enum';
 import { CreateUserDto } from '../dto/CreateUserDto';
 import { UpdateUserDto } from '../dto/UpdateUserDto';
 
@@ -22,12 +23,13 @@ export class UserService {
 
     // Hash da senha
     const hashedPassword = await bcrypt.hash(password, 10);
+    const userRole = role ?? UserRole.CLIENT;
 
     const user = this.userRepository.create({
       ...userData,
       email,
       password: hashedPassword,
-      role: role || 'client',
+      role: userRole,
     });
 
     return this.userRepository.save(user);

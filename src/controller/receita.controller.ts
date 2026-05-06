@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards, Request, ForbiddenException } from '@nestjs/common';
 import { ReceitaService } from '../service/receita.service';
 import { CreateReceitaDto } from '../dto/CreateReceitaDto';
 import { UpdateReceitaDto } from '../dto/UpdateReceitaDto';
@@ -10,8 +10,12 @@ export class ReceitaController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createReceitaDto: CreateReceitaDto) {
-    return this.receitaService.create(createReceitaDto);
+  create(@Request() req: any, @Body() createReceitaDto: CreateReceitaDto) {
+    const role = req.user?.role;
+    if (!['affiliate', 'vendor', 'admin'].includes(role)) {
+      throw new ForbiddenException('Apenas colaboradores podem criar receitas');
+    }
+    return this.receitaService.create(createReceitaDto, req.user.userId);
   }
 
   @Get()

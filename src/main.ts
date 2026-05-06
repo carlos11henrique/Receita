@@ -1,11 +1,43 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, Logger } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './model/app.module';
 import helmet from 'helmet';
-import { ThrottlerModule } from '@nestjs/throttler';
 import * as winston from 'winston';
+import * as dotenv from 'dotenv';
+import { Client } from 'pg';
+
+dotenv.config();
+
+async function ensureDatabaseExists() {
+  const host = process.env.DB_HOST ?? 'localhost';
+  const port = Number(process.env.DB_PORT ?? 5432);
+  const user = process.env.DB_USERNAME ?? 'postgres';
+  const password = process.env.DB_PASSWORD ?? 'postgres';
+  const database = process.env.DB_DATABASE ?? 'projeto_receita';
+  const defaultDatabase = process.env.DB_DEFAULT_DATABASE ?? 'postgres';
+
+  const client = new Client({
+    host,
+    port,
+    user,
+    password,
+    database: defaultDatabase,
+  });
+
+  await client.connect();
+
+  const result = await client.query('SELECT 1 FROM pg_database WHERE datname = $1', [database]);
+  if (result.rowCount === 0) {
+    const safeName = database.replace(/"/g, '""');
+    await client.query(`CREATE DATABASE "${safeName}"`);
+  }
+
+  await client.end();
+}
 
 async function bootstrap() {
+  await ensureDatabaseExists();
+
   const logger = winston.createLogger({
     transports: [
       new winston.transports.Console({

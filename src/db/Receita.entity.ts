@@ -28,6 +28,9 @@ export class Receita {
   @Column('decimal', { precision: 10, scale: 2 })
   preco!: number;
 
+  @Column({ length: 500, nullable: true })
+  imageUrl?: string;
+
   @ManyToOne(() => Criador, (criador) => criador.receitas)
   criador!: Criador;
 
