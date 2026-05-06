@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000';
+const API_URL = 'http://localhost:3007';
 
 export interface LoginCredentials {
   email: string;
@@ -106,6 +106,89 @@ class ApiService {
     }
 
     return response.json();
+  }
+
+  async fetchUsers(): Promise<any[]> {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/user`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Falha ao carregar usuários');
+    }
+
+    return response.json();
+  }
+
+  async createUser(user: { name: string; email: string; role: string; password?: string }): Promise<any> {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/user`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+      body: JSON.stringify(user),
+    });
+
+    if (!response.ok) {
+      throw new Error('Falha ao criar usuário');
+    }
+
+    return response.json();
+  }
+
+  async updateUser(id: number, user: { name: string; email: string; role: string }): Promise<any> {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/user/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+      body: JSON.stringify(user),
+    });
+
+    if (!response.ok) {
+      throw new Error('Falha ao atualizar usuário');
+    }
+
+    return response.json();
+  }
+
+  async deleteUser(id: number): Promise<void> {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/user/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Falha ao deletar usuário');
+    }
+  }
+
+  async deleteRecipe(id: number): Promise<void> {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/receita/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Falha ao deletar receita');
+    }
   }
 }
 

@@ -1,241 +1,318 @@
 ﻿<script setup lang="ts">
-import { computed, ref, onMounted } from 'vue';
-import Login from './pages/auth/Login.vue';
-import Cadastro from './pages/auth/Cadastro.vue';
-import Ecommerce from './pages/ecommerce/Ecommerce.vue';
-import Profile from './pages/auth/Profile.vue';
+import { computed, ref, onMounted } from 'vue'
 
-const currentPage = ref<'home' | 'profile'>('home');
-const currentView = ref<'login' | 'cadastro'>('login');
-const showAuthCard = ref(false);
-const passwordResetMessage = ref('');
-const isAuthenticated = ref(false);
-const userId = ref<number | null>(null);
-const userName = ref('');
-const userRole = ref<'client' | 'affiliate' | 'vendor' | 'admin'>('client');
-const token = ref('');
-const cart = ref([]);
+import Menubar from 'primevue/menubar'
+import Button from 'primevue/button'
+import Badge from 'primevue/badge'
+import Chip from 'primevue/chip'
+import Card from 'primevue/card'
+import TabView from 'primevue/tabview'
+import TabPanel from 'primevue/tabpanel'
+import Message from 'primevue/message'
 
-const goHome = () => {
-  currentPage.value = 'home';
-};
+import Login from './pages/auth/Login.vue'
+import Cadastro from './pages/auth/Cadastro.vue'
+import Ecommerce from './pages/ecommerce/Ecommerce.vue'
+import Profile from './pages/auth/Profile.vue'
+import Admin from './pages/collaborator/Admin.vue'
+
+// ================= STATE =================
+const currentPage = ref<'home' | 'profile' | 'admin'>('home')
+const currentViewIndex = ref(0)
+
+const showAuthCard = ref(false)
+const passwordResetMessage = ref('')
+
+const isAuthenticated = ref(false)
+const userId = ref<number | null>(null)
+const userName = ref('')
+const userRole = ref<'client' | 'affiliate' | 'vendor' | 'admin'>('client')
+const token = ref('')
+const cart = ref<any[]>([])
+
+// ================= COMPUTED =================
+const isAdmin = computed(() =>
+  isAuthenticated.value && userRole.value === 'admin'
+)
+
+// ================= NAV =================
+const goHome = () => (currentPage.value = 'home')
 
 const openProfile = () => {
-  showAuthCard.value = false;
-  currentPage.value = 'profile';
-};
+  showAuthCard.value = false
+  currentPage.value = 'profile'
+}
+
+const openAdmin = () => {
+  showAuthCard.value = false
+  currentPage.value = 'admin'
+}
 
 const openAuthCard = (mode: 'login' | 'cadastro') => {
-  currentView.value = mode;
-  passwordResetMessage.value = '';
-  showAuthCard.value = true;
-};
+  currentViewIndex.value = mode === 'login' ? 0 : 1
+  passwordResetMessage.value = ''
+  showAuthCard.value = true
+}
 
-const menuItems = computed(() => [
-  {
-    label: 'Home',
-    icon: 'pi pi-fw pi-home',
-    command: () => goHome(),
-  },
-  {
-    label: 'Perfil',
-    icon: 'pi pi-fw pi-user',
-    command: () => openProfile(),
-  },
-  {
-    label: 'Mais',
-    icon: 'pi pi-fw pi-ellipsis-h',
-    items: [
-      { label: 'Entrar', icon: 'pi pi-fw pi-sign-in', command: () => openAuthCard('login') },
-      { label: 'Cadastrar', icon: 'pi pi-fw pi-user-plus', command: () => openAuthCard('cadastro') },
-    ],
-  },
-]);
+// ================= MENU =================
+const menuItems = computed(() => {
+  const items: any[] = [
+    {
+      label: 'Home',
+      icon: 'pi pi-home',
+      command: goHome
+    }
+  ]
 
+  if (isAuthenticated.value) {
+    items.push(
+      {
+        label: 'Perfil',
+        icon: 'pi pi-user',
+        command: openProfile
+      }
+    )
+
+    if (isAdmin.value) {
+      items.push({
+        label: 'Admin',
+        icon: 'pi pi-shield',
+        command: openAdmin
+      })
+    }
+  } else {
+    items.push(
+      {
+        label: 'Entrar',
+        icon: 'pi pi-sign-in',
+        command: () => openAuthCard('login')
+      },
+      {
+        label: 'Cadastrar',
+        icon: 'pi pi-user-plus',
+        command: () => openAuthCard('cadastro')
+      }
+    )
+  }
+
+  return items
+})
+
+// ================= AUTH =================
 onMounted(() => {
-  const storedToken = localStorage.getItem('token');
-  const storedUser = localStorage.getItem('user');
-  if (storedToken && storedUser) {
-    token.value = storedToken;
-    isAuthenticated.value = true;
-    try {
-      const data = JSON.parse(storedUser);
-      userId.value = data.id ?? null;
-      userName.value = data.name || '';
-      userRole.value = data.role || 'client';
-    } catch {
-      userId.value = null;
-      userName.value = '';
-      userRole.value = 'client';
-    }
-  }
-});
+  const tokenStorage = localStorage.getItem('token')
+  const userStorage = localStorage.getItem('user')
 
-const handleLoginSuccess = (newToken: string) => {
-  token.value = newToken;
-  isAuthenticated.value = true;
-  showAuthCard.value = false;
-  const storedUser = localStorage.getItem('user');
-  if (storedUser) {
-    try {
-      const data = JSON.parse(storedUser);
-      userId.value = data.id ?? null;
-      userName.value = data.name || '';
-      userRole.value = data.role || 'client';
-    } catch {
-      userId.value = null;
-      userName.value = '';
-      userRole.value = 'client';
-    }
+  if (tokenStorage && userStorage) {
+    token.value = tokenStorage
+    isAuthenticated.value = true
+
+    const data = JSON.parse(userStorage)
+    userId.value = data.id ?? null
+    userName.value = data.name ?? ''
+    userRole.value = data.role ?? 'client'
   }
-};
+})
+
+// ================= ACTIONS =================
+const handleLoginSuccess = (newToken: string) => {
+  token.value = newToken
+  isAuthenticated.value = true
+  showAuthCard.value = false
+
+  const userStorage = localStorage.getItem('user')
+  if (userStorage) {
+    const data = JSON.parse(userStorage)
+    userId.value = data.id ?? null
+    userName.value = data.name ?? ''
+    userRole.value = data.role ?? 'client'
+  }
+}
 
 const handleRegisterSuccess = () => {
-  currentView.value = 'login';
-};
+  currentViewIndex.value = 0
+}
 
 const handleForgotPassword = () => {
-  passwordResetMessage.value = 'Recuperar senha ainda não está disponível aqui. Use o cadastro ou entre em contato com o suporte.';
-};
+  passwordResetMessage.value =
+    'Recuperação de senha ainda não implementada.'
+}
 
 const handleAuthClose = () => {
-  showAuthCard.value = false;
-  passwordResetMessage.value = '';
-};
+  showAuthCard.value = false
+}
 
 const handleLogout = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  token.value = '';
-  isAuthenticated.value = false;
-  userId.value = null;
-  userName.value = '';
-  userRole.value = 'client';
-  currentPage.value = 'home';
-};
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+
+  isAuthenticated.value = false
+  token.value = ''
+  userName.value = ''
+  userRole.value = 'client'
+  currentPage.value = 'home'
+}
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-amber-100 text-slate-800">
-    <header class="sticky top-0 z-20 shadow-sm">
-      <Menubar :model="menuItems">
-        <template #start>
-          <div class="flex items-center gap-3 px-3">
-            <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500 text-xl font-bold text-white"></span>
-            <div>
-              <h1 class="text-lg font-semibold text-slate-900">Mercado de Encantos</h1>
-            </div>
-          </div>
-        </template>
-        <template #end>
-          <div class="flex items-center gap-3 pr-3">
-            <button class="relative rounded-full bg-rose-500 p-2 text-white hover:bg-rose-600">
-              <i class="pi pi-shopping-cart"></i>
-              <span v-if="cart.length" class="absolute -top-1 -right-1 rounded-full bg-red-500 px-1 text-xs">{{ cart.length }}</span>
-            </button>
-            <button
-              v-if="!isAuthenticated"
-              @click="openAuthCard('login')"
-              class="rounded-full border border-pink-300 bg-white px-4 py-2 text-sm font-semibold text-pink-700 transition hover:border-pink-400 hover:bg-pink-50"
-            >
-              Entrar / Cadastrar
-            </button>
-            <div v-else class="flex items-center gap-3">
-              <span class="rounded-full bg-rose-100 px-4 py-2 text-sm font-medium text-rose-700">Olá, {{ userName }}</span>
-              <button
-                @click="handleLogout"
-                class="rounded-full bg-pink-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-pink-600"
-              >
-                Sair
-              </button>
-            </div>
-          </div>
-        </template>
-      </Menubar>
-    </header>
+  <div class="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-amber-50 text-slate-800">
 
-    <main>
-      <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        <div v-if="showAuthCard" class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-2xl shadow-slate-200/40 mb-8">
-          <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p class="text-sm font-semibold uppercase tracking-[0.35em] text-rose-500">Autenticação</p>
-              <h2 class="mt-2 text-3xl font-semibold text-slate-900">Faça login ou cadastre-se</h2>
-              <p class="mt-2 text-sm text-slate-600">Digite seu email e senha abaixo. Se não tiver conta, clique em cadastrar.</p>
-            </div>
-            <button
+    <!-- HEADER -->
+    <Menubar :model="menuItems" class="shadow-sm border-none bg-white/80 backdrop-blur sticky top-0 z-20">
+
+      <template #start>
+        <div class="flex items-center gap-3 px-2">
+
+          <div class="h-10 w-10 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-500 shadow-md flex items-center justify-center text-white font-bold">
+          </div>
+
+          <div class="leading-tight">
+            <h1 class="text-lg font-bold text-slate-900">Mercado de Encantos</h1>
+          </div>
+
+        </div>
+      </template>
+
+      <template #end>
+        <div class="flex items-center gap-3 pr-3">
+
+          <!-- CART -->
+          <Button
+            icon="pi pi-shopping-cart"
+            class="p-button-text p-button-rounded relative text-slate-700"
+          >
+            <Badge
+              v-if="cart.length"
+              :value="cart.length"
+              severity="danger"
+              class="absolute -top-1 -right-1"
+            />
+          </Button>
+
+          <!-- ADMIN -->
+          <Button
+            v-if="isAdmin"
+            label="Admin"
+            icon="pi pi-shield"
+            class="p-button-sm p-button-outlined p-button-danger"
+            @click="openAdmin"
+          />
+
+          <!-- LOGIN -->
+          <Button
+            v-if="!isAuthenticated"
+            label="Entrar"
+            icon="pi pi-user"
+            class="p-button-sm p-button-primary"
+            @click="openAuthCard('login')"
+          />
+
+          <!-- USER -->
+          <div v-else class="flex items-center gap-2">
+            <Chip :label="userName" icon="pi pi-user" />
+            <Button
+              label="Sair"
+              icon="pi pi-sign-out"
+              class="p-button-sm p-button-text text-rose-600"
+              @click="handleLogout"
+            />
+          </div>
+
+        </div>
+      </template>
+
+    </Menubar>
+
+    <!-- MAIN -->
+    <main class="mx-auto max-w-6xl px-4 py-8">
+
+      <!-- AUTH CARD -->
+      <Card
+        v-if="showAuthCard"
+        class="shadow-2xl rounded-3xl border border-slate-100 overflow-hidden"
+      >
+
+        <template #title>
+          <div class="text-2xl font-bold text-slate-900">
+            Bem-vindo 👋
+          </div>
+        </template>
+
+        <template #subtitle>
+          <span class="text-slate-500">
+            Entre ou crie sua conta para continuar
+          </span>
+        </template>
+
+        <template #content>
+
+          <div class="flex justify-end mb-2">
+            <Button
+              icon="pi pi-times"
+              class="p-button-text text-slate-500"
               @click="handleAuthClose"
-              class="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-            >
-              Fechar
-            </button>
+            />
           </div>
 
-          <div class="mt-6">
-            <Transition name="slide-fade" mode="out-in">
+          <TabView v-model:activeIndex="currentViewIndex">
+
+            <TabPanel header="Login">
               <Login
-                v-if="currentView === 'login'"
                 @loginSuccess="handleLoginSuccess"
-                @switchToRegister="currentView = 'cadastro'"
+                @switchToRegister="currentViewIndex = 1"
                 @forgotPassword="handleForgotPassword"
               />
+            </TabPanel>
+
+            <TabPanel header="Cadastro">
               <Cadastro
-                v-else
                 @registerSuccess="handleRegisterSuccess"
-                @switchToLogin="currentView = 'login'"
+                @switchToLogin="currentViewIndex = 0"
               />
-            </Transition>
+            </TabPanel>
 
-            <div v-if="passwordResetMessage" class="mt-4 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
-              {{ passwordResetMessage }}
-            </div>
-          </div>
-        </div>
+          </TabView>
 
-        <Ecommerce
-          v-else-if="currentPage === 'home'"
-          :is-authenticated="isAuthenticated"
-          :user-role="userRole"
-          :user-name="userName"
-          @request-auth="openAuthCard('login')"
-          @openProfile="currentPage = 'profile'"
-        />
+          <Message
+            v-if="passwordResetMessage"
+            severity="info"
+            class="mt-4"
+            :closable="false"
+          >
+            {{ passwordResetMessage }}
+          </Message>
 
-        <Profile
-          v-else-if="currentPage === 'profile'"
-          :user-id="userId"
-          :user-name="userName"
-          :user-role="userRole"
-          :token="token"
-          :is-authenticated="isAuthenticated"
-          @back="currentPage = 'home'"
-          @request-auth="openAuthCard"
-        />
-      </div>
+        </template>
+
+      </Card>
+
+      <!-- PAGES -->
+      <Ecommerce
+        v-else-if="currentPage === 'home'"
+        :is-authenticated="isAuthenticated"
+        :user-role="userRole"
+        :user-name="userName"
+        @request-auth="openAuthCard('login')"
+        @openProfile="currentPage = 'profile'"
+      />
+
+      <Profile
+        v-else-if="currentPage === 'profile'"
+        :user-id="userId"
+        :user-name="userName"
+        :user-role="userRole"
+        :token="token"
+        :is-authenticated="isAuthenticated"
+        @back="currentPage = 'home'"
+      />
+
+      <Admin
+        v-else-if="currentPage === 'admin'"
+        :user-role="userRole"
+        :is-authenticated="isAuthenticated"
+      />
+
     </main>
+
   </div>
 </template>
-
-<style scoped>
-.fade-enter-active,
-.fade-leave-active,
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-  transition: all 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.slide-fade-enter-from {
-  transform: translateY(10px);
-  opacity: 0;
-}
-
-.slide-fade-leave-to {
-  transform: translateY(-10px);
-  opacity: 0;
-}
-</style>

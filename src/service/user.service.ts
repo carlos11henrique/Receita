@@ -40,10 +40,13 @@ export class UserService {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.userRepository.findOne({
-      where: { email },
-      select: ['id', 'name', 'email', 'password', 'role'], // incluir password e role para validação
-    });
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .addSelect(['user.password'])
+      .where('user.email = :email', { email })
+      .getOne();
+
+    return user ?? null;
   }
 
   async findOne(id: number): Promise<User> {
@@ -70,5 +73,21 @@ export class UserService {
   async remove(id: number): Promise<void> {
     const user = await this.findOne(id);
     await this.userRepository.remove(user);
+  }
+
+  async seedAdmin(): Promise<void> {
+    const adminEmail = 'admin@receita.com';
+    const existingAdmin = await this.userRepository.findOne({ where: { email: adminEmail } });
+    if (!existingAdmin) {
+      const hashedPassword = await bcrypt.hash('admin123', 10);
+      const admin = this.userRepository.create({
+        name: 'Administrador',
+        email: adminEmail,
+        password: hashedPassword,
+        role: UserRole.ADMIN,
+      });
+      await this.userRepository.save(admin);
+      console.log('Admin user created: admin@receita.com / admin123');
+    }
   }
 }
