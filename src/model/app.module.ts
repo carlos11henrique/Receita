@@ -14,6 +14,11 @@ import { FormaPagamentoModule } from './FormaPagamento.module';
 import { AvaliacaoModule } from './Avaliacao.module';
 import { ComentarioModule } from './Comentario.module';
 import { FavoritoModule } from './Favorito.module';
+import { ProductModule } from './Product.module';
+import { AffiliateLinkModule } from './AffiliateLink.module';
+import { OrderModule } from './Order.module';
+import { AffiliateCommissionModule } from './AffiliateCommission.module';
+import { ProductRevenueRuleModule } from './ProductRevenueRule.module';
 
 @Module({
   imports: [
@@ -54,6 +59,11 @@ import { FavoritoModule } from './Favorito.module';
     AvaliacaoModule,
     ComentarioModule,
     FavoritoModule,
+    ProductModule,
+    AffiliateLinkModule,
+    OrderModule,
+    AffiliateCommissionModule,
+    ProductRevenueRuleModule,
   ],
 })
 export class AppModule {}

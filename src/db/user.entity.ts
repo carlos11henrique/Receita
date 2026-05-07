@@ -38,6 +38,24 @@ export class User {
   @OneToMany('Favorito', 'usuario')
   favoritos!: any[];
 
+  @OneToMany('Product', 'creator')
+  productsCreated!: any[];
+
+  @OneToMany('Product', 'seller')
+  productsSold!: any[];
+
+  @OneToMany('AffiliateLink', 'affiliate')
+  affiliateLinks!: any[];
+
+  @OneToMany('Order', 'customer')
+  orders!: any[];
+
+  @OneToMany('Order', 'affiliate')
+  affiliateOrders!: any[];
+
+  @OneToMany('AffiliateCommission', 'affiliate')
+  affiliateCommissions!: any[];
+
   @OneToOne(() => Criador, (criador) => criador.user)
   criador?: Criador;
 

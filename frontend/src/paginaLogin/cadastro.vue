@@ -1,162 +1,193 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import apiService from '../services/api';
+import { ref } from 'vue'
+import apiService from '../services/api'
+import Swal from 'sweetalert2'
 
 const emit = defineEmits<{
-  registerSuccess: [];
-  switchToLogin: [];
-}>();
+  registerSuccess: []
+  switchToLogin: []
+}>()
 
-const name = ref('');
-const email = ref('');
-const password = ref('');
-const confirmPassword = ref('');
-const role = ref<'client' | 'affiliate'>('client');
-const loading = ref(false);
-const error = ref('');
-const success = ref('');
+const name = ref('')
+const email = ref('')
+const password = ref('')
+const confirmPassword = ref('')
+const role = ref<'client' | 'affiliate'>('client')
+
+const loading = ref(false)
+const error = ref('')
+
+const toast = Swal.mixin({
+  toast: true,
+  position: 'top-end',
+  showConfirmButton: false,
+  timer: 2500,
+  timerProgressBar: true,
+  background: '#ffffff',
+  color: '#0f172a'
+})
 
 const validateForm = (): boolean => {
-  error.value = '';
+  error.value = ''
 
-  if (!name.value || !email.value || !password.value || !confirmPassword.value) {
-    error.value = 'Por favor, preencha todos os campos.';
-    return false;
+  if (
+    !name.value.trim() ||
+    !email.value.trim() ||
+    !password.value ||
+    !confirmPassword.value
+  ) {
+    error.value = 'Preencha todos os campos'
+    return false
   }
 
-  if (name.value.length < 3) {
-    error.value = 'O nome deve ter pelo menos 3 caracteres.';
-    return false;
+  if (name.value.trim().length < 3) {
+    error.value = 'Nome muito curto'
+    return false
+  }
+
+  if (!email.value.includes('@')) {
+    error.value = 'Email inválido'
+    return false
   }
 
   if (password.value.length < 6) {
-    error.value = 'A senha deve ter pelo menos 6 caracteres.';
-    return false;
+    error.value = 'Senha muito fraca'
+    return false
   }
 
   if (password.value !== confirmPassword.value) {
-    error.value = 'As senhas não correspondem.';
-    return false;
+    error.value = 'As senhas não conferem'
+    return false
   }
 
-  return true;
-};
+  return true
+}
 
 const handleRegister = async () => {
   if (!validateForm()) {
-    return;
+    Swal.fire({
+      icon: 'warning',
+      title: 'Atenção',
+      text: error.value,
+      confirmButtonColor: '#ec4899'
+    })
+    return
   }
 
-  loading.value = true;
-  error.value = '';
-  success.value = '';
+  loading.value = true
 
   try {
-    await apiService.register({
-      name: name.value,
-      email: email.value,
-      password: password.value,
-      role: role.value,
-    });
+    const payload = {
+      name: name.value.trim(),
+      email: email.value.trim().toLowerCase(),
+      password: password.value
+    }
 
-    success.value = 'Conta criada com sucesso! Redirecionando para login...';
+    await apiService.register(payload)
 
-    setTimeout(() => {
-      emit('registerSuccess');
-    }, 1500);
-  } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Erro ao criar conta. Tente novamente.';
+    await Swal.fire({
+      icon: 'success',
+      title: 'Conta criada!',
+      html: `
+        <div style="font-size:14px">
+          Bem-vindo ao <b>Mercado de Encantos</b> ✨<br/>
+          Sua conta foi criada com sucesso.
+        </div>
+      `,
+      confirmButtonColor: '#ec4899',
+      timer: 1800,
+      showConfirmButton: false,
+      background: '#fff'
+    })
+
+    emit('registerSuccess')
+
+  } catch (err: any) {
+    const message =
+      err?.response?.data?.message ||
+      err?.message ||
+      'Erro ao criar conta'
+
+    await Swal.fire({
+      icon: 'error',
+      title: 'Não foi possível cadastrar',
+      html: `
+        <div style="font-size:14px">
+          <b>${message}</b><br/><br/>
+          Verifique seus dados e tente novamente.
+        </div>
+      `,
+      confirmButtonColor: '#f43f5e'
+    })
+
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 const switchToLogin = () => {
-  emit('switchToLogin');
-};
+  emit('switchToLogin')
+}
 </script>
 
 <template>
   <div class="auth-container">
     <div class="auth-box">
+
       <div class="header-box">
-        <p class="eyebrow">Crie sua conta</p>
-        <h1>Cadastrar</h1>
-        <p class="subheading">Entre para ampliar seus pedidos e ganhar ofertas especiais.</p>
+        <p class="eyebrow">Criar conta</p>
+        <h1>Cadastro</h1>
+        <p class="subheading">
+          Entre para acessar ofertas exclusivas ✨
+        </p>
       </div>
 
       <form @submit.prevent="handleRegister" class="form">
+
         <div class="form-grid">
+
           <div class="form-group">
-            <label for="name">Nome completo</label>
-            <input
-              id="name"
-              type="text"
-              placeholder="Seu nome completo"
-              v-model="name"
-              :disabled="loading"
-              required
-            />
+            <label>Nome</label>
+            <input v-model="name" type="text" :disabled="loading" />
           </div>
 
           <div class="form-group">
-            <label for="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              placeholder="seu@email.com"
-              v-model="email"
-              :disabled="loading"
-              required
-            />
+            <label>Email</label>
+            <input v-model="email" type="email" :disabled="loading" />
           </div>
 
           <div class="form-group">
-            <label for="password">Senha</label>
-            <input
-              id="password"
-              type="password"
-              placeholder="Mínimo 6 caracteres"
-              v-model="password"
-              :disabled="loading"
-              required
-            />
+            <label>Senha</label>
+            <input v-model="password" type="password" :disabled="loading" />
           </div>
 
           <div class="form-group">
-            <label for="confirmPassword">Confirmar senha</label>
-            <input
-              id="confirmPassword"
-              type="password"
-              placeholder="Confirme sua senha"
-              v-model="confirmPassword"
-              :disabled="loading"
-              required
-            />
+            <label>Confirmar senha</label>
+            <input v-model="confirmPassword" type="password" :disabled="loading" />
           </div>
+
         </div>
 
         <div class="form-group">
-          <label for="role">Tipo de conta</label>
-          <select id="role" v-model="role" :disabled="loading" class="input-select">
+          <label>Tipo de conta</label>
+          <select v-model="role" :disabled="loading">
             <option value="client">Cliente</option>
-            <option value="affiliate">Afiliada</option>
+            <option value="affiliate">Afiliado</option>
           </select>
         </div>
 
-        <div v-if="error" class="error-message">{{ error }}</div>
-        <div v-if="success" class="success-message">{{ success }}</div>
-
-        <button type="submit" class="btn-primary" :disabled="loading">
-          {{ loading ? 'Criando conta...' : 'Criar Conta' }}
+        <button class="btn-primary" type="submit" :disabled="loading">
+          {{ loading ? 'Criando conta...' : 'Criar conta' }}
         </button>
+
       </form>
 
       <div class="divider">ou</div>
 
-      <button type="button" class="btn-secondary" @click="switchToLogin" :disabled="loading">
-        Já tenho uma conta
+      <button class="btn-secondary" @click="switchToLogin" :disabled="loading">
+        Já tenho conta
       </button>
+
     </div>
   </div>
 </template>
@@ -167,159 +198,91 @@ const switchToLogin = () => {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #fff0f6 0%, #ffedf7 50%, #fff7ed 100%);
+  background: linear-gradient(135deg, #fff0f6, #fff7ed);
   padding: 20px;
 }
 
 .auth-box {
   width: 100%;
   max-width: 520px;
+  background: white;
   border-radius: 2rem;
-  background: rgba(255, 255, 255, 0.98);
-  box-shadow: 0 30px 80px rgba(236, 72, 153, 0.16);
-  padding: 42px 36px;
-  border: 1px solid rgba(251, 207, 233, 0.8);
+  padding: 40px;
+  box-shadow: 0 25px 70px rgba(236, 72, 153, 0.15);
 }
 
 .header-box {
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
 .eyebrow {
-  display: inline-flex;
-  margin-bottom: 12px;
-  padding: 6px 12px;
-  border-radius: 9999px;
+  display: inline-block;
   background: #ffe4f1;
   color: #db2777;
+  padding: 6px 12px;
+  border-radius: 999px;
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
 }
 
 h1 {
-  margin: 0;
-  font-size: 2.25rem;
-  color: #1f2937;
+  margin: 10px 0;
+  font-size: 32px;
 }
 
 .subheading {
-  margin-top: 12px;
   color: #64748b;
-  font-size: 0.95rem;
-  line-height: 1.7;
+  font-size: 14px;
 }
 
 .form {
   display: grid;
-  gap: 18px;
+  gap: 16px;
 }
 
 .form-grid {
   display: grid;
-  gap: 18px;
-}
-
-@media (min-width: 640px) {
-  .form-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px;
-  }
+  gap: 14px;
 }
 
 .form-group {
-  display: grid;
-  gap: 10px;
-}
-
-label {
-  color: #475569;
-  font-weight: 600;
-  font-size: 0.94rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 input,
-.input-select {
-  width: 100%;
-  padding: 14px 16px;
-  border-radius: 1.25rem;
-  border: 1px solid #fbdbdf;
-  background: #fff6fb;
-  transition: all 0.25s ease;
-  font-size: 0.95rem;
-  color: #0f172a;
-}
-
-input:focus,
-.input-select:focus {
-  outline: none;
-  border-color: #ec4899;
-  box-shadow: 0 0 0 4px rgba(251, 207, 232, 0.45);
+select {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid #fbcfe8;
+  background: #fff7fb;
 }
 
 .btn-primary {
-  width: 100%;
-  padding: 14px 18px;
-  border-radius: 9999px;
+  margin-top: 10px;
+  padding: 14px;
+  border-radius: 999px;
   border: none;
-  background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
+  background: linear-gradient(135deg, #ec4899, #f43f5e);
   color: white;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 16px 28px rgba(236, 72, 153, 0.24);
-}
-
-.btn-primary:disabled {
-  opacity: 0.75;
-  cursor: not-allowed;
+  font-weight: bold;
 }
 
 .btn-secondary {
   width: 100%;
-  padding: 14px 18px;
-  border-radius: 9999px;
-  border: 1px solid #f8bbd0;
-  background: #fff;
+  padding: 14px;
+  border-radius: 999px;
+  border: 1px solid #fbcfe8;
+  background: white;
   color: #be185d;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background: #ffe4f1;
+  font-weight: bold;
 }
 
 .divider {
-  margin: 22px 0;
   text-align: center;
-  color: #9ca3af;
-  font-size: 0.9rem;
-}
-
-.error-message {
-  background-color: #fee2e2;
-  color: #b91c1c;
-  padding: 12px 16px;
-  border-radius: 1rem;
-  border-left: 4px solid #fca5a5;
-  font-size: 0.94rem;
-}
-
-.success-message {
-  background-color: #ecfdf5;
-  color: #065f46;
-  padding: 12px 16px;
-  border-radius: 1rem;
-  border-left: 4px solid #6ee7b7;
-  font-size: 0.94rem;
+  margin: 18px 0;
+  color: #94a3b8;
+  font-size: 13px;
 }
 </style>
