@@ -2,6 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Fallback rápido: evitar SVG/IMG gigantes e prover utilitários mínimos
+   enquanto a pipeline do Tailwind/PostCSS não estiver estável. Remover
+   quando Tailwind gerar as classes corretamente. */
+img, svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* utilitários mínimos (substituir pelo Tailwind real depois) */
+.w-8 { width: 2rem !important; }
+.h-8 { height: 2rem !important; }
+.text-red-600 { color: #dc2626 !important; }
+.bg-red-100 { background-color: #fee2e2 !important; }
+
+
 /* color palette from <https://github.com/vuejs/theme> */
 :root {
   --vt-c-white: #ffffff;

@@ -37,7 +37,7 @@ export class OrderService {
       throw new NotFoundException('Product not found');
     }
 
-    let affiliate = null;
+    let affiliate: User | null = null;
     if (affiliateId) {
       affiliate = await this.userRepository.findOne({ where: { id: affiliateId } });
       if (!affiliate) {

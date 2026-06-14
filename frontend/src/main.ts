@@ -1,35 +1,18 @@
-﻿import { createApp } from 'vue'
-import App from './App.vue'
+﻿import { createApp } from 'vue';
+import { createPinia } from 'pinia';
+import App from './App.vue';
 
+// Tailwind CSS is currently provided via CDN during dev while PostCSS is fixed
+// import './assets/main.css';
 
-import PrimeVue from 'primevue/config'
+const app = createApp(App);
 
-// import Aura from '@primeuix/themes/aura'
+const pinia = createPinia();
+app.use(pinia);
 
-// Componentes
-import Menubar from 'primevue/menubar'
-import Button from 'primevue/button'
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
-import Dialog from 'primevue/dialog'
-import InputText from 'primevue/inputtext'
-import Dropdown from 'primevue/dropdown'
+// Import router after Pinia is registered to avoid circular init issues
+const routerModule = await import('./router');
+const router = routerModule.default;
+app.use(router);
 
-// Estilos
-import 'primeicons/primeicons.css'
-import './assets/main.css'
-
-const app = createApp(App)
-
-app.use(PrimeVue as any)
-
-// Registro global
-app.component('Menubar', Menubar)
-app.component('Button', Button)
-app.component('DataTable', DataTable)
-app.component('Column', Column)
-app.component('Dialog', Dialog)
-app.component('InputText', InputText)
-app.component('Dropdown', Dropdown)
-
-app.mount('#app')
+app.mount('#app');

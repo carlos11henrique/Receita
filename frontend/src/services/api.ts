@@ -1,195 +1,122 @@
-const API_URL = 'http://localhost:3007';
+import axios from 'axios';
+import type { AxiosInstance } from 'axios';
+import type { User, Product, Order, LoginResponse } from '../types';
+import { errorAlert, toast } from './swal';
 
-export interface LoginCredentials {
-  email: string;
-  password: string;
-}
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3007';
 
-export interface RegisterCredentials {
-  name: string;
-  email: string;
-  password: string;
-  role?: 'client' | 'affiliate' | 'vendor' | 'admin';
-}
+const api: AxiosInstance = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
-export interface AuthResponse {
-  access_token: string;
-  user: {
-    id: number;
-    name: string;
+// Interceptor para adicionar token JWT
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+api.interceptors.response.use(
+  (response) => response,
+  async (err) => {
+    const msg = err.response?.data?.message || err.message || 'Erro na requisição';
+    // show nice modal for important errors, toast for minor ones
+    if (err.response && err.response.status >= 500) {
+      await errorAlert('Erro do servidor', msg);
+    } else if (err.response && err.response.status >= 400) {
+      toast('error', msg);
+    } else {
+      toast('error', msg);
+    }
+    return Promise.reject(err);
+  }
+);
+
+export const authService = {
+  async login(email: string, password: string): Promise<LoginResponse> {
+    const response = await api.post<LoginResponse>('/auth/login', { email, password });
+    return response.data;
+  },
+
+  async register(data: {
     email: string;
-    role?: string;
-  };
-}
+    password: string;
+    name: string;
+    cpf?: string;
+    phone?: string;
+  }): Promise<User> {
+    const response = await api.post<User>('/user', data);
+    return response.data;
+  },
 
-export interface RecipeCreateData {
-  titulo: string;
-  descricao: string;
-  modoPreparo: string;
-  preco: number;
-  imageUrl?: string;
-  categoriasIds?: number[];
-}
+  async getProfile(id: number): Promise<User> {
+    const response = await api.get<User>(`/user/${id}`);
+    return response.data;
+  },
 
-export interface RecipeResponse {
-  id: number;
-  titulo: string;
-  descricao: string;
-  modoPreparo: string;
-  preco: number;
-  imageUrl?: string;
-  categorias?: Array<{ id: number; nome: string }>;
-  criador?: { id: number; nome: string };
-}
+  async updateProfile(id: number, data: Partial<User>): Promise<User> {
+    const response = await api.patch<User>(`/user/${id}`, data);
+    return response.data;
+  },
+};
 
-class ApiService {
-  async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await fetch(`${API_URL}/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(credentials),
-    });
+export const productService = {
+  async getAllProducts(): Promise<Product[]> {
+    const response = await api.get<Product[]>('/products');
+    return response.data;
+  },
 
-    if (!response.ok) {
-      throw new Error('Falha ao fazer login');
-    }
+  async getProduct(id: number): Promise<Product> {
+    const response = await api.get<Product>(`/products/${id}`);
+    return response.data;
+  },
 
-    return response.json();
-  }
+  async createProduct(data: Partial<Product>): Promise<Product> {
+    const response = await api.post<Product>('/products', data);
+    return response.data;
+  },
 
-  async register(credentials: RegisterCredentials): Promise<{ id: number; name: string; email: string }> {
-    const response = await fetch(`${API_URL}/user`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(credentials),
-    });
+  async updateProduct(id: number, data: Partial<Product>): Promise<Product> {
+    const response = await api.patch<Product>(`/products/${id}`, data);
+    return response.data;
+  },
 
-    if (!response.ok) {
-      throw new Error('Falha ao criar conta');
-    }
+  async deleteProduct(id: number): Promise<void> {
+    await api.delete(`/products/${id}`);
+  },
+};
 
-    return response.json();
-  }
+export const orderService = {
+  async createOrder(data: {
+    customerId: number;
+    productId: number;
+    affiliateId?: number;
+    total: number;
+    status?: string;
+  }): Promise<Order> {
+    const response = await api.post<Order>('/orders', data);
+    return response.data;
+  },
 
-  async fetchRecipes(): Promise<RecipeResponse[]> {
-    const response = await fetch(`${API_URL}/receita`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+  async getOrders(): Promise<Order[]> {
+    const response = await api.get<Order[]>('/orders');
+    return response.data;
+  },
 
-    if (!response.ok) {
-      throw new Error('Falha ao carregar receitas');
-    }
+  async getOrder(id: number): Promise<Order> {
+    const response = await api.get<Order>(`/orders/${id}`);
+    return response.data;
+  },
 
-    return response.json();
-  }
+  async updateOrder(id: number, data: Partial<Order>): Promise<Order> {
+    const response = await api.patch<Order>(`/orders/${id}`, data);
+    return response.data;
+  },
+};
 
-  async createRecipe(recipe: RecipeCreateData): Promise<RecipeResponse> {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/receita`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: token ? `Bearer ${token}` : '',
-      },
-      body: JSON.stringify(recipe),
-    });
-
-    if (!response.ok) {
-      throw new Error('Falha ao criar receita');
-    }
-
-    return response.json();
-  }
-
-  async fetchUsers(): Promise<any[]> {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/user`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: token ? `Bearer ${token}` : '',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Falha ao carregar usuários');
-    }
-
-    return response.json();
-  }
-
-  async createUser(user: { name: string; email: string; role: string; password?: string }): Promise<any> {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/user`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: token ? `Bearer ${token}` : '',
-      },
-      body: JSON.stringify(user),
-    });
-
-    if (!response.ok) {
-      throw new Error('Falha ao criar usuário');
-    }
-
-    return response.json();
-  }
-
-  async updateUser(id: number, user: { name: string; email: string; role: string }): Promise<any> {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/user/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: token ? `Bearer ${token}` : '',
-      },
-      body: JSON.stringify(user),
-    });
-
-    if (!response.ok) {
-      throw new Error('Falha ao atualizar usuário');
-    }
-
-    return response.json();
-  }
-
-  async deleteUser(id: number): Promise<void> {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/user/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: token ? `Bearer ${token}` : '',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Falha ao deletar usuário');
-    }
-  }
-
-  async deleteRecipe(id: number): Promise<void> {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/receita/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: token ? `Bearer ${token}` : '',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Falha ao deletar receita');
-    }
-  }
-}
-
-export default new ApiService();
+export default api;
