@@ -19,7 +19,7 @@
         <h2 class="text-3xl font-bold mb-8 text-center">Categorias</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div
-            v-for="category in ['Camisetas', 'Calças', 'Vestidos', 'Acessórios']"
+            v-for="category in ['Doces', 'Salgados', 'Bebidas', 'Sobremesas', 'Veganas', 'Sem Glúten', 'Low Carb', 'Fitness']"
             :key="category"
             class="bg-gray-100 rounded-lg p-6 text-center hover:bg-gray-200 cursor-pointer transition"
           >

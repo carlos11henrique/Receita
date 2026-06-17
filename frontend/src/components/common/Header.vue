@@ -11,8 +11,8 @@
           </button>
 
           <RouterLink to="/" class="flex items-center gap-3 text-red-600 font-extrabold text-lg md:text-2xl">
-            <span class="bg-red-100 text-red-600 rounded-full px-3 py-1 text-sm md:text-base">RH</span>
-            <span class="hidden sm:inline">StyleHub</span>
+            <span class="bg-red-100 text-red-600 rounded-full px-3 py-1 text-sm md:text-base">RC</span>
+            <span class="hidden sm:inline">Receita</span>
           </RouterLink>
         </div>
 
