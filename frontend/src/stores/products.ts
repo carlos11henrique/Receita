@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { Product } from '../types';
 import { productService } from '../services/api';
+import { useAuthStore } from './auth';
 
 export const useProductsStore = defineStore('products', () => {
   const products = ref<Product[]>([]);
@@ -30,7 +31,14 @@ export const useProductsStore = defineStore('products', () => {
     error.value = '';
 
     try {
-      products.value = await productService.getAllProducts();
+      const all = await productService.getAllProducts();
+      const authStore = useAuthStore();
+      // show only active products for non-admins
+      if (!authStore.user || authStore.user.role !== 'admin') {
+        products.value = all.filter((p) => p.status === 'active');
+      } else {
+        products.value = all;
+      }
     } catch (err: any) {
       error.value = err.message || 'Erro ao carregar produtos';
     } finally {

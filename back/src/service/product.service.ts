@@ -42,6 +42,13 @@ export class ProductService {
     return this.productRepository.find({ relations: ['creator', 'seller', 'affiliateLinks', 'revenueRule'] });
   }
 
+  async findByStatus(status: string): Promise<Product[]> {
+    return this.productRepository.find({
+      where: { status },
+      relations: ['creator', 'seller', 'affiliateLinks', 'revenueRule'],
+    });
+  }
+
   async findOne(id: number): Promise<Product> {
     const product = await this.productRepository.findOne({
       where: { id },

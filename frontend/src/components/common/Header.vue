@@ -40,6 +40,8 @@
         <nav class="flex items-center gap-4">
           <RouterLink to="/products" class="hidden md:inline text-gray-700 hover:text-red-600">Receitas</RouterLink>
 
+          <RouterLink v-if="authStore.isAuthenticated" to="/product/new" class="hidden md:inline bg-red-500 text-white px-4 py-2 rounded-full text-sm hover:bg-red-600">Publicar produto</RouterLink>
+
           <RouterLink to="/cart" class="relative text-gray-700 hover:text-red-600">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17" />
@@ -56,6 +58,7 @@
               <div v-show="openDropdown" class="absolute right-0 mt-2 w-44 bg-white rounded-lg shadow-lg py-2">
                 <RouterLink to="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Meu perfil</RouterLink>
                 <RouterLink to="/orders" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Meus pedidos</RouterLink>
++                <RouterLink v-if="authStore.user?.role === 'admin'" to="/admin" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Admin</RouterLink>
                 <button @click="logout" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Sair</button>
               </div>
             </div>
@@ -74,6 +77,10 @@
           <RouterLink to="/products" class="block px-3 py-2 rounded hover:bg-gray-50">Receitas</RouterLink>
           <RouterLink to="/orders" class="block px-3 py-2 rounded hover:bg-gray-50">Meus pedidos</RouterLink>
           <RouterLink to="/profile" class="block px-3 py-2 rounded hover:bg-gray-50">Meu perfil</RouterLink>
+          <RouterLink to="/product/new" class="block px-3 py-2 rounded hover:bg-gray-50">Publicar produto</RouterLink>
+          <RouterLink v-if="authStore.user?.role === 'admin'" to="/admin" class="block px-3 py-2 rounded hover:bg-gray-50">ADM</RouterLink>
+          <button @click="logout" class="w-full text-left px-3 py-2 rounded hover:bg-gray-50">Sair</button>
+
         </div>
       </div>
     </div>

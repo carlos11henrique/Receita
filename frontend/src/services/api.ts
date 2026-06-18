@@ -71,6 +71,13 @@ export const productService = {
     return response.data;
   },
 
+
+
+  async getPendingProducts(): Promise<Product[]> {
+    const response = await api.get<Product[]>('/products/moderation/pending');
+    return response.data;
+  },
+
   async getProduct(id: number): Promise<Product> {
     const response = await api.get<Product>(`/products/${id}`);
     return response.data;
@@ -88,6 +95,17 @@ export const productService = {
 
   async deleteProduct(id: number): Promise<void> {
     await api.delete(`/products/${id}`);
+  },
+};
+export const generoService = {
+  async getAll() {
+    const response = await api.get('/generos');
+    return response.data;
+  },
+
+  async getOne(id: number) {
+    const response = await api.get(`/generos/${id}`);
+    return response.data;
   },
 };
 
@@ -120,3 +138,4 @@ export const orderService = {
 };
 
 export default api;
+

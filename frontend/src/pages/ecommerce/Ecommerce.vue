@@ -68,14 +68,14 @@ const cartCount = computed(() => cart.value.length)
 
 const loadRecipes = async () => {
   try {
-    recipes.value = await apiService.fetchRecipes()
+    const response = await apiService.get('/receitas')
+    recipes.value = response.data
   } catch (err) {
     console.error(err)
     errorMessage.value =
       'Não foi possível carregar as receitas. Tente novamente mais tarde.'
   }
 }
-
 onMounted(() => {
   loadRecipes()
 })

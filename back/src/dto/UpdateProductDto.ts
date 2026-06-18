@@ -23,6 +23,11 @@ export class UpdateProductDto {
   status?: string;
 
   @IsOptional()
+  @IsString()
+  @Transform(({ value }) => sanitize(value))
+  rejectionReason?: string;
+
+  @IsOptional()
   @IsInt()
   creatorId?: number;
 

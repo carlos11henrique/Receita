@@ -26,6 +26,9 @@ export class Product {
   @Column({ length: 50, default: 'active' })
   status!: string;
 
+  @Column('text', { nullable: true })
+  rejectionReason?: string;
+
   @ManyToOne('User', 'productsCreated')
   creator!: any;
 

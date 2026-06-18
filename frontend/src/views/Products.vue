@@ -21,6 +21,7 @@
             </div>
             <div class="flex items-center gap-3">
               <button @click="clearFilters" class="px-4 py-2 bg-gray-100 rounded">Limpar</button>
+              <RouterLink v-if="authStore.isAuthenticated" to="/product/new" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Publicar produto</RouterLink>
             </div>
           </div>
         </div>
@@ -47,10 +48,12 @@
 
 <script setup lang="ts">
 import { onMounted, computed } from 'vue';
+import { useAuthStore } from '../stores/auth';
 import { useProductsStore } from '../stores/products';
 import ProductCard from '../components/product/ProductCard.vue';
 import ProductGrid from '../components/layout/ProductGrid.vue';
 
+const authStore = useAuthStore();
 const productsStore = useProductsStore();
 
 const searchQuery = computed({

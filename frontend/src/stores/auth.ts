@@ -11,13 +11,50 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => !!token.value && !!user.value);
 
-  const initializeFromStorage = () => {
+  const decodeJwt = (jwt: string): any | null => {
+    try {
+      const parts = jwt.split('.');
+      if (parts.length !== 3) return null;
+      const payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      const json = decodeURIComponent(
+        atob(payload)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join(''),
+      );
+      return JSON.parse(json);
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const initializeFromStorage = async () => {
     const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
 
     if (storedToken && storedUser) {
       token.value = storedToken;
-      user.value = JSON.parse(storedUser);
+      try {
+        user.value = JSON.parse(storedUser);
+      } catch (_) {
+        user.value = null;
+      }
+      return;
+    }
+
+    if (storedToken && !storedUser) {
+      token.value = storedToken;
+      const payload = decodeJwt(storedToken);
+      const userId = payload?.sub;
+      if (userId) {
+        try {
+          const prof = await authService.getProfile(Number(userId));
+          user.value = prof;
+          localStorage.setItem('user', JSON.stringify(prof));
+        } catch (e) {
+          user.value = null;
+        }
+      }
     }
   };
 

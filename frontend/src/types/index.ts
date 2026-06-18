@@ -14,11 +14,21 @@ export interface Product {
   description: string;
   price: number;
   status: string;
+  rejectionReason?: string;
   creator?: User;
   seller?: User;
   image?: string;
   images?: string[];
+
   category?: string;
+
+  categorias?: {
+    id: number;
+    nome: string;
+  }[];
+
+  categoriasIds?: number[];
+
   rating?: number;
   reviews?: number;
   inStock?: boolean;

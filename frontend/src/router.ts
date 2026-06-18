@@ -12,6 +12,7 @@ import Checkout from './views/Checkout.vue';
 import OrderSuccess from './views/OrderSuccess.vue';
 import Orders from './views/Orders.vue';
 import Profile from './views/Profile.vue';
+import CreateProduct from './views/CreateProduct.vue';
 import Admin from './views/Admin.vue';
 import Collaborator from './views/Collaborator.vue';
 
@@ -82,6 +83,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/product/new',
+    name: 'CreateProduct',
+    component: CreateProduct,
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/:pathMatch(.*)*',
     redirect: '/',
   },
@@ -95,12 +102,22 @@ const router = createRouter({
 // Route guards
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token');
+  const storedUser = localStorage.getItem('user');
+  const user = storedUser ? JSON.parse(storedUser) : null;
 
   if (to.meta.requiresAuth && !token) {
     next('/login');
-  } else {
-    next();
+    return;
   }
+
+  if (to.meta.role === 'admin') {
+    if (!token || !user?.role || user.role !== 'admin') {
+      next('/');
+      return;
+    }
+  }
+
+  next();
 });
 
 export default router;
