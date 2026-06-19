@@ -10,9 +10,9 @@ import {
 } from 'typeorm';
 
 import { Criador } from './Criador.entity';
-import { Categoria } from './categoria.entity';
-import { Cozinha } from './cozinha.entity';
-import { Tag } from './tag.entity';
+import { Categoria } from './Categoria.entity';
+import { Cozinha } from './Cozinha.entity';
+import { Tag } from './Tag.entity';
 
 @Entity('receita')
 export class Receita {
@@ -52,14 +52,6 @@ export class Receita {
   )
   @JoinTable({
     name: 'receita_categoria',
-    joinColumn: {
-      name: 'receitaId',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'categoriaId',
-      referencedColumnName: 'id',
-    },
   })
   categorias!: Categoria[];
 
@@ -69,14 +61,6 @@ export class Receita {
   )
   @JoinTable({
     name: 'receita_cozinha',
-    joinColumn: {
-      name: 'receitaId',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'cozinhaId',
-      referencedColumnName: 'id',
-    },
   })
   cozinhas!: Cozinha[];
 
@@ -86,14 +70,6 @@ export class Receita {
   )
   @JoinTable({
     name: 'receita_tag',
-    joinColumn: {
-      name: 'receitaId',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'tagId',
-      referencedColumnName: 'id',
-    },
   })
   tags!: Tag[];
 

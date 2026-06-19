@@ -4,9 +4,9 @@ import { Repository, In } from 'typeorm';
 
 import { Receita } from '../db/Receita.entity';
 import { Criador } from '../db/Criador.entity';
-import { Categoria } from '../db/categoria.entity';
-import { Cozinha } from '../db/cozinha.entity';
-import { Tag } from '../db/tag.entity';
+import { Categoria } from '../db/Categoria.entity';
+import { Cozinha } from '../db/Cozinha.entity';
+import { Tag } from '../db/Tag.entity';
 import { User } from '../db/user.entity';
 
 import { CreateReceitaDto } from '../dto/CreateReceitaDto';
