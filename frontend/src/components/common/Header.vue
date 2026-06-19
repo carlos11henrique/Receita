@@ -58,7 +58,7 @@
               <div v-show="openDropdown" class="absolute right-0 mt-2 w-44 bg-white rounded-lg shadow-lg py-2">
                 <RouterLink to="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Meu perfil</RouterLink>
                 <RouterLink to="/orders" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Meus pedidos</RouterLink>
-+                <RouterLink v-if="authStore.user?.role === 'admin'" to="/admin" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Admin</RouterLink>
+                <RouterLink v-if="authStore.user?.role === 'admin'" to="/admin" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Admin</RouterLink>
                 <button @click="logout" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Sair</button>
               </div>
             </div>

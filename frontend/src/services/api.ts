@@ -97,14 +97,14 @@ export const productService = {
     await api.delete(`/products/${id}`);
   },
 };
-export const generoService = {
+export const categoriaService = {
   async getAll() {
-    const response = await api.get('/generos');
+    const response = await api.get('/categorias');
     return response.data;
   },
 
   async getOne(id: number) {
-    const response = await api.get(`/generos/${id}`);
+    const response = await api.get(`/categorias/${id}`);
     return response.data;
   },
 };

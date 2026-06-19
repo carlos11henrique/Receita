@@ -1,19 +1,6 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <section class="bg-white py-16">
-      <div class="max-w-7xl mx-auto px-4">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-10 rounded-[2rem] bg-red-500 p-8 text-white shadow-xl">
-          <div>
-            <p class="text-sm uppercase tracking-[0.35em] text-amber-200">Venda na plataforma</p>
-            <h2 class="mt-3 text-4xl font-semibold">Publique sua receita e comece a vender</h2>
-            <p class="mt-4 max-w-2xl text-gray-100">Crie um anúncio, aguarde aprovação do admin e deixe sua receita visível para clientes.</p>
-          </div>
-          <div>
-            <RouterLink to="/product/new" class="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-red-600 font-semibold shadow hover:bg-gray-100">Publicar produto</RouterLink>
-          </div>
-        </div>
-      </div>
-    </section>
+   
 
     <Hero />
 

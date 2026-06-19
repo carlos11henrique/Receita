@@ -9,9 +9,7 @@
         <RouterLink to="/products" class="bg-white text-red-600 font-semibold px-6 py-3 rounded-lg shadow hover:opacity-95">
           Ver Receitas
         </RouterLink>
-        <RouterLink to="/register" class="bg-white/20 border border-white text-white font-medium px-6 py-3 rounded-lg hover:bg-white/10">
-          Seja um Colaborador
-        </RouterLink>
+        
       </div>
     </div>
   </section>

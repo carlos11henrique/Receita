@@ -3,14 +3,14 @@ import { reactive, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '@/services/api';
 
-interface Genero {
+interface Categoria {
   id: number;
   nome: string;
 }
 
 const router = useRouter();
 
-const categorias = ref<Genero[]>([]);
+const categorias = ref<Categoria[]>([]);
 const isLoading = ref(false);
 const error = ref('');
 const message = ref('');
@@ -25,8 +25,11 @@ const form = reactive({
 
 const carregarCategorias = async () => {
   try {
-    const { data } = await api.get('/generos');
-    categorias.value = data;
+    error.value = '';
+
+    const { data } = await api.get('/categorias');
+
+    categorias.value = Array.isArray(data) ? data : [];
   } catch (err) {
     console.error('Erro ao carregar categorias:', err);
     error.value = 'Erro ao carregar categorias.';
@@ -39,12 +42,11 @@ const handleSubmit = async () => {
     error.value = '';
     message.value = '';
 
-    await api.post('/produtos', {
-      titulo: form.titulo,
-      descricao: form.descricao,
-      modoPreparo: form.modoPreparo,
-      preco: form.preco,
-      categorias: form.categorias,
+    await api.post('/products', {
+      title: form.titulo,
+      description: form.descricao,
+      price: Number(form.preco),
+      status: 'pending',
     });
 
     message.value = 'Receita enviada para análise.';
@@ -53,7 +55,7 @@ const handleSubmit = async () => {
       router.push('/products');
     }, 1500);
   } catch (err: any) {
-    console.error(err);
+    console.error(err.response?.data);
 
     error.value =
       err?.response?.data?.message ||
@@ -62,7 +64,6 @@ const handleSubmit = async () => {
     isLoading.value = false;
   }
 };
-
 onMounted(() => {
   carregarCategorias();
 });
