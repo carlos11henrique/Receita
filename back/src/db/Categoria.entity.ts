@@ -6,8 +6,8 @@ import {
   ManyToMany,
 } from 'typeorm';
 
-@Entity('genero')
-export class Genero {
+@Entity('categoria')
+export class Categoria {
   @PrimaryGeneratedColumn()
   id!: number;
 

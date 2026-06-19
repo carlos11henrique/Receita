@@ -5,7 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './auth.module';
 import { UserModule } from './user.module';
-import { GeneroModule } from './genero.module';
+import { CategoriaModule } from './Categoria.module';
 import { ReceitaModule } from './receita.module';
 import { CriadorModule } from './Criador.module';
 import { CompraModule } from './Compra.module';
@@ -19,6 +19,8 @@ import { AffiliateLinkModule } from './AffiliateLink.module';
 import { OrderModule } from './Order.module';
 import { AffiliateCommissionModule } from './AffiliateCommission.module';
 import { ProductRevenueRuleModule } from './ProductRevenueRule.module';
+import { TagModule } from './Tag.module';
+import { CozinhaModule } from './Cozinha.module';
 
 @Module({
   imports: [
@@ -50,7 +52,7 @@ import { ProductRevenueRuleModule } from './ProductRevenueRule.module';
     }),
 
     UserModule,
-    GeneroModule,
+    CategoriaModule,
     ReceitaModule,
     CriadorModule,
     CompraModule,
@@ -64,6 +66,8 @@ import { ProductRevenueRuleModule } from './ProductRevenueRule.module';
     OrderModule,
     AffiliateCommissionModule,
     ProductRevenueRuleModule,
+    TagModule,
+    CozinhaModule,
   ],
 })
 export class AppModule {}

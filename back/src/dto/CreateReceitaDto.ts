@@ -1,22 +1,29 @@
-import { IsString, IsNumber, IsOptional, IsArray, IsInt } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsArray,
+  IsInt,
+} from 'class-validator';
+
 import { Transform } from 'class-transformer';
 import { sanitize } from 'class-sanitizer';
 
 export class CreateReceitaDto {
   @IsString()
   @Transform(({ value }) => sanitize(value))
-  titulo: string;
+  titulo!: string;
 
   @IsString()
   @Transform(({ value }) => sanitize(value))
-  descricao: string;
+  descricao!: string;
 
   @IsString()
   @Transform(({ value }) => sanitize(value))
-  modoPreparo: string;
+  modoPreparo!: string;
 
   @IsNumber()
-  preco: number;
+  preco!: number;
 
   @IsOptional()
   @IsInt()
@@ -31,4 +38,14 @@ export class CreateReceitaDto {
   @IsArray()
   @IsInt({ each: true })
   categoriasIds?: number[];
+
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  cozinhasIds?: number[];
+
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  tagsIds?: number[];
 }
