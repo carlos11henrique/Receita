@@ -79,8 +79,15 @@ const pending = ref<any[]>([]);
 const allProducts = ref<any[]>([]);
 const loading = ref(false);
 
-const approvedCount = computed(() => allProducts.value.filter((product) => product.status === 'active').length);
-const rejectedCount = computed(() => allProducts.value.filter((product) => product.status === 'rejected').length);
+const approvedCount = computed(() => allProducts.value.filter((product) => {
+  const status = product.status?.toLowerCase();
+  return status === 'active';
+}).length);
+
+const rejectedCount = computed(() => allProducts.value.filter((product) => {
+  const status = product.status?.toLowerCase();
+  return status === 'rejected';
+}).length);
 
 const loadPending = async () => {
   loading.value = true;

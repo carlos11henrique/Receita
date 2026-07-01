@@ -33,9 +33,14 @@ export const useProductsStore = defineStore('products', () => {
     try {
       const all = await productService.getAllProducts();
       const authStore = useAuthStore();
-      // show only active products for non-admins
+
+      const visibleProducts = all.filter((product) => {
+        const status = product.status?.toLowerCase();
+        return !status || status === 'active' || status === 'pending';
+      });
+
       if (!authStore.user || authStore.user.role !== 'admin') {
-        products.value = all.filter((p) => p.status === 'active');
+        products.value = visibleProducts;
       } else {
         products.value = all;
       }

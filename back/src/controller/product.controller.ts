@@ -11,15 +11,14 @@ export class ProductController {
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Request() req: any, @Body() createProductDto: CreateProductDto) {
-    // set creator from token and default status to 'pending'
     try {
       createProductDto.creatorId = req.user?.userId;
     } catch (e) {
       // ignore if not available
     }
-    if (!createProductDto.status) {
-      createProductDto.status = 'pending';
-    }
+
+    createProductDto.status = 'pending';
+
     return this.productService.create(createProductDto);
   }
 

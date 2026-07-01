@@ -17,7 +17,10 @@ export class ProductService {
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
     const { creatorId, sellerId, ...payload } = createProductDto;
-    const product = this.productRepository.create(payload as Partial<Product>);
+    const product = this.productRepository.create({
+      ...payload,
+      status: 'pending',
+    } as Partial<Product>);
 
     if (creatorId) {
       const creator = await this.userRepository.findOne({ where: { id: creatorId } });

@@ -25,6 +25,14 @@ api.interceptors.response.use(
   (response) => response,
   async (err) => {
     const msg = err.response?.data?.message || err.message || 'Erro na requisição';
+
+    if (err.response?.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.assign('/login');
+      return Promise.reject(err);
+    }
+
     // show nice modal for important errors, toast for minor ones
     if (err.response && err.response.status >= 500) {
       await errorAlert('Erro do servidor', msg);
