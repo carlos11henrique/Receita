@@ -26,6 +26,12 @@ export class User {
   @Column({ type: 'enum', enum: UserRole, default: UserRole.CLIENT })
   role!: UserRole;
 
+  @Column({ default: false })
+  isBanned!: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
+  banUntil?: Date;
+
   @OneToMany('Compra', 'usuario')
   compras!: any[];
 

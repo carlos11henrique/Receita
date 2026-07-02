@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards, Request, ForbiddenException } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UserService } from '../service/user.service';
 import { CreateUserDto } from '../dto/CreateUserDto';
 import { UpdateUserDto } from '../dto/UpdateUserDto';
@@ -12,18 +13,35 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
-  findAll() {
+  findAll(@Request() req: any) {
+    if (req.user?.role !== 'admin') {
+      throw new ForbiddenException('Acesso negado');
+    }
     return this.userService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Request() req: any, @Param('id', ParseIntPipe) id: number) {
+    if (req.user?.role !== 'admin' && req.user?.userId !== id) {
+      throw new ForbiddenException('Acesso negado');
+    }
     return this.userService.findOne(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto) {
+  update(@Request() req: any, @Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto) {
+    if (req.user?.role !== 'admin' && req.user?.userId !== id) {
+      throw new ForbiddenException('Acesso negado');
+    }
+
+    if (req.user?.role !== 'admin' && (updateUserDto.role || updateUserDto.isBanned !== undefined || updateUserDto.banUntil)) {
+      throw new ForbiddenException('Apenas administradores podem alterar função ou banimento');
+    }
+
     return this.userService.update(id, updateUserDto);
   }
 

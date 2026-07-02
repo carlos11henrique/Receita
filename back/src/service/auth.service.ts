@@ -12,7 +12,20 @@ export class AuthService {
 
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.userService.findByEmail(email);
-    if (user && await bcrypt.compare(password, user.password)) {
+    if (!user) return null;
+
+    const now = new Date();
+    if (user.isBanned && (!user.banUntil || new Date(user.banUntil) > now)) {
+      throw new UnauthorizedException('Usuário banido');
+    }
+
+    if (user.isBanned && user.banUntil && new Date(user.banUntil) <= now) {
+      await this.userService.update(user.id, { isBanned: false, banUntil: null });
+      user.isBanned = false;
+      user.banUntil = null;
+    }
+
+    if (await bcrypt.compare(password, user.password)) {
       const { password, ...result } = user;
       return result;
     }

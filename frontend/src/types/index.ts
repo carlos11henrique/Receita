@@ -2,9 +2,11 @@ export interface User {
   id: number;
   email: string;
   name: string;
-  role: 'admin' | 'seller' | 'customer' | 'affiliate';
+  role: 'admin' | 'vendor' | 'client' | 'affiliate';
   cpf?: string;
   phone?: string;
+  isBanned?: boolean;
+  banUntil?: string;
   createdAt: Date;
 }
 

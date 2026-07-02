@@ -71,6 +71,20 @@ export const authService = {
     const response = await api.patch<User>(`/user/${id}`, data);
     return response.data;
   },
+
+  async fetchUsers(): Promise<User[]> {
+    const response = await api.get<User[]>('/user');
+    return response.data;
+  },
+
+  async updateUser(id: number, data: Partial<User>): Promise<User> {
+    const response = await api.patch<User>(`/user/${id}`, data);
+    return response.data;
+  },
+
+  async deleteUser(id: number): Promise<void> {
+    await api.delete(`/user/${id}`);
+  },
 };
 
 export const productService = {
@@ -144,6 +158,20 @@ export const orderService = {
     return response.data;
   },
 };
+export const userService = {
+  async fetchUsers(): Promise<User[]> {
+    const response = await api.get<User[]>('/user');
+    return response.data;
+  },
 
+  async updateUser(id: number, data: Partial<User>): Promise<User> {
+    const response = await api.patch<User>(`/user/${id}`, data);
+    return response.data;
+  },
+
+  async deleteUser(id: number): Promise<void> {
+    await api.delete(`/user/${id}`);
+  },
+};
 export default api;
 

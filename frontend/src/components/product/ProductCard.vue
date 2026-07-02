@@ -71,7 +71,6 @@
       <!-- Add to Cart Button -->
 <!-- Actions -->
 <div v-if="product.status === 'active'" class="flex gap-2">
-  <!-- Adicionar ao carrinho -->
   <button
     @click.stop="addToCart"
     class="flex-1 bg-white border border-red-500 text-red-500 hover:bg-red-50 font-semibold py-2 rounded-lg transition"
@@ -79,7 +78,6 @@
     🛒 Carrinho
   </button>
 
-  <!-- Comprar agora -->
   <button
     @click.stop="buyNow"
     class="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg transition"

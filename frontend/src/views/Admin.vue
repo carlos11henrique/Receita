@@ -24,6 +24,76 @@
       </div>
 
       <section class="mt-8 bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold mb-4">Gerenciar Usuários</h3>
+        <div v-if="loading" class="text-sm text-gray-600">Carregando usuários...</div>
+        <div v-else-if="users.length === 0" class="text-sm text-gray-600">Nenhum usuário encontrado.</div>
+        <div v-else class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">ID</th>
+                <th class="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">Nome</th>
+                <th class="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">Email</th>
+                <th class="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">Cargo</th>
+                <th class="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">Status</th>
+                <th class="px-4 py-2 text-left text-xs font-medium uppercase text-gray-500">Ban até</th>
+                <th class="px-4 py-2 text-right text-xs font-medium uppercase text-gray-500">Ações</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr v-for="user in users" :key="user.id">
+                <td class="px-4 py-3 text-sm text-gray-700">{{ user.id }}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">{{ user.name }}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">{{ user.email }}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">
+                  <select
+                    v-model="user.role"
+                    @change="updateUserRole(user, user.role)"
+                    class="border border-gray-300 rounded px-2 py-1 text-sm"
+                  >
+                    <option value="client">Cliente</option>
+                    <option value="affiliate">Afiliada</option>
+                    <option value="vendor">Vendedora</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </td>
+                <td class="px-4 py-3 text-sm text-gray-700">
+                  <span :class="user.isBanned ? 'text-red-600' : 'text-green-600'">
+                    {{ user.isBanned ? 'Banido' : 'Ativo' }}
+                  </span>
+                </td>
+                <td class="px-4 py-3 text-sm text-gray-700">
+                  {{ user.banUntil ? new Date(user.banUntil).toLocaleDateString() : '—' }}
+                </td>
+                <td class="px-4 py-3 text-right text-sm font-medium space-x-2">
+                  <button
+                    v-if="!user.isBanned"
+                    @click="setBan(user, 7)"
+                    class="px-3 py-1 bg-red-500 text-white rounded"
+                  >
+                    Banir 7d
+                  </button>
+                  <button
+                    v-if="user.isBanned"
+                    @click="clearBan(user)"
+                    class="px-3 py-1 bg-green-500 text-white rounded"
+                  >
+                    Desbanir
+                  </button>
+                  <button
+                    @click="removeUser(user)"
+                    class="px-3 py-1 bg-gray-800 text-white rounded"
+                  >
+                    Excluir
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="mt-8 bg-white rounded-lg shadow p-6">
         <h3 class="text-lg font-semibold mb-4">Status dos Produtos</h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="p-4 bg-gray-50 rounded-lg shadow-sm">
@@ -73,10 +143,12 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue';
-import { productService } from '../services/api';
+import { productService, userService } from '../services/api';
+import type { User } from '../types';
 
 const pending = ref<any[]>([]);
 const allProducts = ref<any[]>([]);
+const users = ref<User[]>([]);
 const loading = ref(false);
 
 const approvedCount = computed(() => allProducts.value.filter((product) => {
@@ -98,6 +170,58 @@ const loadPending = async () => {
     console.error(e);
   } finally {
     loading.value = false;
+  }
+};
+
+const loadUsers = async () => {
+  loading.value = true;
+  try {
+    users.value = await userService.fetchUsers();
+  } catch (e) {
+    console.error('Erro ao carregar usuários:', e);
+  } finally {
+    loading.value = false;
+  }
+};
+
+const updateUserRole = async (user: User, role: User['role']) => {
+  try {
+    await userService.updateUser(user.id, { role });
+    user.role = role;
+  } catch (e) {
+    alert('Erro ao atualizar cargo');
+  }
+};
+
+const setBan = async (user: User, days: number) => {
+  const until = new Date();
+  until.setDate(until.getDate() + days);
+  try {
+    await userService.updateUser(user.id, { isBanned: true, banUntil: until.toISOString() });
+    user.isBanned = true;
+    user.banUntil = until.toISOString();
+  } catch (e) {
+    alert('Erro ao banir usuário');
+  }
+};
+
+const clearBan = async (user: User) => {
+  try {
+    await userService.updateUser(user.id, { isBanned: false, banUntil: null });
+    user.isBanned = false;
+    user.banUntil = undefined;
+  } catch (e) {
+    alert('Erro ao desbanir usuário');
+  }
+};
+
+const removeUser = async (user: User) => {
+  if (!confirm(`Tem certeza que deseja excluir ${user.name}?`)) return;
+  try {
+    await userService.deleteUser(user.id);
+    users.value = users.value.filter((u) => u.id !== user.id);
+  } catch (e) {
+    alert('Erro ao excluir usuário');
   }
 };
 
@@ -127,7 +251,9 @@ const reject = async (id: number) => {
   }
 };
 
-onMounted(loadPending);
+onMounted(async () => {
+    await Promise.all([loadPending(), loadUsers()]);
+  });
 </script>
 
 <style scoped>
