@@ -69,20 +69,32 @@
       </div>
 
       <!-- Add to Cart Button -->
-      <button
-        v-if="product.status === 'active'"
-        @click.stop="addToCart"
-        class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg transition"
-      >
-        Adicionar ao Carrinho
-      </button>
-      <button
-        v-else
-        disabled
-        class="w-full bg-gray-300 text-gray-500 font-semibold py-2 rounded-lg cursor-not-allowed"
-      >
-        Indisponível
-      </button>
+<!-- Actions -->
+<div v-if="product.status === 'active'" class="flex gap-2">
+  <!-- Adicionar ao carrinho -->
+  <button
+    @click.stop="addToCart"
+    class="flex-1 bg-white border border-red-500 text-red-500 hover:bg-red-50 font-semibold py-2 rounded-lg transition"
+  >
+    🛒 Carrinho
+  </button>
+
+  <!-- Comprar agora -->
+  <button
+    @click.stop="buyNow"
+    class="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg transition"
+  >
+    Comprar
+  </button>
+</div>
+
+<button
+  v-else
+  disabled
+  class="w-full bg-gray-300 text-gray-500 font-semibold py-2 rounded-lg cursor-not-allowed"
+>
+  Indisponível
+</button>
     </div>
   </div>
 </template>
@@ -109,6 +121,10 @@ const goToProduct = () => {
 
 const addToCart = () => {
   cartStore.addToCart(props.product);
-  // Optional: Show a toast notification
+};
+
+const buyNow = () => {
+  cartStore.addToCart(props.product);
+  router.push('/checkout');
 };
 </script>

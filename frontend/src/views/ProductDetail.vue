@@ -94,13 +94,20 @@
           </div>
 
           <!-- Action Buttons -->
-          <div class="flex gap-4">
+          <div class="flex flex-col gap-4 md:flex-row">
             <button
               v-if="product.status === 'active'"
               @click="addToCart"
               class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-lg transition"
             >
               Adicionar ao Carrinho
+            </button>
+            <button
+              v-if="product.status === 'active'"
+              @click="buyNow"
+              class="flex-1 bg-gray-900 hover:bg-gray-800 text-white font-bold py-3 rounded-lg transition"
+            >
+              Comprar Agora
             </button>
             <button
               v-else
@@ -169,6 +176,13 @@ const addToCart = () => {
   if (product.value) {
     cartStore.addToCart(product.value, quantity.value);
     router.push('/cart');
+  }
+};
+
+const buyNow = () => {
+  if (product.value) {
+    cartStore.addToCart(product.value, quantity.value);
+    router.push('/checkout');
   }
 };
 
