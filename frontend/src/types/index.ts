@@ -5,9 +5,25 @@ export interface User {
   role: 'admin' | 'vendor' | 'client' | 'affiliate';
   cpf?: string;
   phone?: string;
+  cep?: string;
+  street?: string;
+  number?: string;
+  complement?: string;
+  city?: string;
+  state?: string;
   isBanned?: boolean;
   banUntil?: string;
   createdAt: Date;
+}
+
+export interface ProductComment {
+  id: number;
+  text: string;
+  user: {
+    id: number;
+    name: string;
+  };
+  createdAt: string;
 }
 
 export interface Product {
@@ -35,6 +51,7 @@ export interface Product {
   reviews?: number;
   inStock?: boolean;
   createdAt: Date;
+  comments?: ProductComment[];
 }
 
 export interface CartItem {

@@ -68,6 +68,7 @@ import { CozinhaModule } from './Cozinha.module';
     ProductRevenueRuleModule,
     TagModule,
     CozinhaModule,
+    ProductFeedbackModule,
   ],
 })
 export class AppModule {}

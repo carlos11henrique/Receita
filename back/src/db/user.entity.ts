@@ -32,6 +32,24 @@ export class User {
   @Column({ type: 'timestamp', nullable: true })
   banUntil?: Date;
 
+  @Column({ length: 20, nullable: true })
+  cep?: string;
+
+  @Column({ length: 150, nullable: true })
+  street?: string;
+
+  @Column({ length: 20, nullable: true })
+  number?: string;
+
+  @Column({ length: 150, nullable: true })
+  complement?: string;
+
+  @Column({ length: 100, nullable: true })
+  city?: string;
+
+  @Column({ length: 100, nullable: true })
+  state?: string;
+
   @OneToMany('Compra', 'usuario')
   compras!: any[];
 

@@ -10,7 +10,13 @@
           <div class="bg-white rounded-lg shadow-md p-6">
             <h2 class="text-2xl font-bold text-gray-800 mb-4">Endereço de Entrega</h2>
 
-            <form class="space-y-4">
+            <div v-if="hasSavedAddress" class="rounded-lg border border-green-200 bg-green-50 p-4">
+              <p class="font-semibold text-gray-800">Endereço salvo</p>
+              <p class="text-gray-700 mt-2">{{ savedAddress }}</p>
+              <p class="text-sm text-gray-500 mt-2">Seu endereço será usado automaticamente neste pedido.</p>
+            </div>
+
+            <form v-else class="space-y-4">
               <div class="grid grid-cols-2 gap-4">
                 <input
                   v-model="fullName"
@@ -221,7 +227,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { useCartStore } from '../stores/cart';
@@ -244,6 +250,35 @@ const shippingMethod = ref('standard');
 const paymentMethod = ref('credit');
 const isProcessing = ref(false);
 
+onMounted(() => {
+  if (!authStore.user) return;
+
+  fullName.value = authStore.user.name;
+  email.value = authStore.user.email;
+  phone.value = authStore.user.phone || '';
+  cep.value = authStore.user.cep || '';
+  street.value = authStore.user.street || '';
+  number.value = authStore.user.number || '';
+  complement.value = authStore.user.complement || '';
+  city.value = authStore.user.city || '';
+  state.value = authStore.user.state || '';
+});
+
+const hasSavedAddress = computed(() => {
+  return (
+    !!authStore.user?.cep &&
+    !!authStore.user?.street &&
+    !!authStore.user?.number &&
+    !!authStore.user?.city &&
+    !!authStore.user?.state
+  );
+});
+
+const savedAddress = computed(() => {
+  if (!authStore.user) return '';
+  return `${authStore.user.street}, ${authStore.user.number}${authStore.user.complement ? ' - ' + authStore.user.complement : ''}, ${authStore.user.city} - ${authStore.user.state}, CEP ${authStore.user.cep}`;
+});
+
 const formatPrice = (price: number) => {
   return price.toFixed(2).replace('.', ',');
 };
@@ -262,7 +297,23 @@ const completeOrder = async () => {
   isProcessing.value = true;
 
   try {
-    // Create order for each item in cart
+    if (!hasSavedAddress.value) {
+      if (!cep.value || !street.value || !number.value || !city.value || !state.value) {
+        alert('Por favor, preencha o endereço de entrega.');
+        isProcessing.value = false;
+        return;
+      }
+
+      await authStore.updateProfile({
+        cep: cep.value,
+        street: street.value,
+        number: number.value,
+        complement: complement.value,
+        city: city.value,
+        state: state.value,
+      });
+    }
+
     for (const item of cartStore.items) {
       await orderService.createOrder({
         customerId: authStore.user!.id,
@@ -272,12 +323,11 @@ const completeOrder = async () => {
       });
     }
 
-    // Clear cart and redirect
     cartStore.clearCart();
     router.push('/order-success');
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error completing order:', error);
-    alert('Erro ao processar pedido. Tente novamente.');
+    alert(error?.response?.data?.message || 'Erro ao processar pedido. Tente novamente.');
   } finally {
     isProcessing.value = false;
   }

@@ -93,8 +93,6 @@ export const productService = {
     return response.data;
   },
 
-
-
   async getPendingProducts(): Promise<Product[]> {
     const response = await api.get<Product[]>('/products/moderation/pending');
     return response.data;
@@ -119,6 +117,34 @@ export const productService = {
     await api.delete(`/products/${id}`);
   },
 };
+
+export const feedbackService = {
+  async addComment(productId: number, text: string) {
+    const response = await api.post('/feedback/comment', { productId, text });
+    return response.data;
+  },
+
+  async addRating(productId: number, score: number) {
+    const response = await api.post('/feedback/rating', { productId, score });
+    return response.data;
+  },
+
+  async getComments(productId: number) {
+    const response = await api.get(`/feedback/product/${productId}/comments`);
+    return response.data;
+  },
+
+  async getRatings(productId: number) {
+    const response = await api.get(`/feedback/product/${productId}/ratings`);
+    return response.data;
+  },
+
+  async getRecommendations() {
+    const response = await api.get('/feedback/recommendations');
+    return response.data;
+  },
+};
+
 export const categoriaService = {
   async getAll() {
     const response = await api.get('/categorias');
@@ -144,7 +170,7 @@ export const orderService = {
   },
 
   async getOrders(): Promise<Order[]> {
-    const response = await api.get<Order[]>('/orders');
+    const response = await api.get<Order[]>('/orders/me');
     return response.data;
   },
 

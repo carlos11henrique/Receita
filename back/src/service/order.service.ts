@@ -81,6 +81,13 @@ export class OrderService {
     return this.orderRepository.find({ relations: ['customer', 'product', 'affiliate', 'commissions'] });
   }
 
+  async findByCustomer(customerId: number): Promise<Order[]> {
+    return this.orderRepository.find({
+      where: { customer: { id: customerId } },
+      relations: ['customer', 'product', 'affiliate', 'commissions'],
+    });
+  }
+
   async findOne(id: number): Promise<Order> {
     const order = await this.orderRepository.findOne({
       where: { id },
